@@ -38,17 +38,15 @@ EXPOSE 8000
 # Run
 # --------------------------------
 
-CMD [
-    "gunicorn",
-    "app.main:app",
-    "-k",
-    "uvicorn.workers.UvicornWorker",
-    "--bind",
-    "0.0.0.0:8000",
-    "--workers",
-    "1",
-    "--access-logfile",
-    "-",
-    "--error-logfile",
-    "-"
-]
+CMD ["gunicorn", \
+     "app.main:app", \
+     "-k", \
+     "uvicorn.workers.UvicornWorker", \
+     "--bind", \
+     "0.0.0.0:8000", \
+     "--workers", \
+     "1", \
+     "--access-logfile", \
+     "-", \
+     "--error-logfile", \
+     "-"]
