@@ -5,7 +5,7 @@ class TelegramMessage(BaseModel):
     id: int
     token: str
     chat_id: int
-    message_id: str
+    message_id: str | None = None
     text: str
     reply_markup: list | None = None
     action: Literal["new", "edit", "recreate"]

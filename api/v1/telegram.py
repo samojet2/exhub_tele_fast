@@ -2,6 +2,7 @@ import json
 from workers.batch_manager import (
     create_batch,
     wait_for_batch,
+    collect_batch_result
 )
 import asyncio
 from fastapi import APIRouter, UploadFile, File, Form
@@ -61,22 +62,6 @@ async def send_document(
         "message": "document endpoint works",
     }
 
-
-async def collect_batch_result(batch_id: str):
-
-    results = await wait_for_batch(
-        batch_id
-    )
-
-    print()
-    print("=" * 60)
-    print(f"BATCH {batch_id} COMPLETED")
-    print("=" * 60)
-
-    for result in results:
-        print(result)
-
-    print("=" * 60)
 
 
 @router.post("/send-batch")

@@ -1,5 +1,6 @@
 import asyncio
-
+from services.callback import CallbackClient
+from core.config import settings
 
 batches = {}
 
@@ -32,8 +33,10 @@ async def wait_for_batch(batch_id: str):
 
     return batch["results"]
 
-async def collect_batch_result(batch_id: str):
 
+callback_client = CallbackClient()
+
+async def collect_batch_result(batch_id: str):
     results = await wait_for_batch(batch_id)
 
     print("\n")
@@ -41,6 +44,13 @@ async def collect_batch_result(batch_id: str):
     print(f"BATCH {batch_id} COMPLETED")
     print("=" * 50)
 
+    await callback_client.post(
+        url=settings.django_callback_url,
+        data={
+            "batch_id": batch_id,
+            "results": results,
+        },
+    )
     for result in results:
         print(result)
 
