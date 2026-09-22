@@ -1,22 +1,30 @@
-from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 def build_reply_markup(data):
     if not data:
         return None
 
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                text=button["text"],
-                callback_data=button.get("callback_data"),
+    keyboard = []
+
+    for row in data:
+        buttons = []
+
+        for button in row:
+            kwargs = {
+                "text": button["text"],
+            }
+
+            if button.get("url"):
+                kwargs["url"] = button["url"]
+
+            elif button.get("callback_data"):
+                kwargs["callback_data"] = button["callback_data"]
+
+            buttons.append(
+                InlineKeyboardButton(**kwargs)
             )
-            for button in row
-        ]
-        for row in data
-    ]
+
+        keyboard.append(buttons)
 
     return InlineKeyboardMarkup(keyboard)
