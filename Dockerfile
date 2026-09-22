@@ -39,7 +39,7 @@ EXPOSE 8000
 # --------------------------------
 
 CMD ["gunicorn", \
-     "app.main:app", \
+     "main:app", \
      "-k", \
      "uvicorn.workers.UvicornWorker", \
      "--bind", \
