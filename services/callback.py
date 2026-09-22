@@ -1,44 +1,100 @@
 import httpx
+from core.config import settings
+from .create_signature import create_service_headers
+import asyncio
+import logging
 
 
-class CallbackClientError(Exception):
-    pass
+
+logger = logging.getLogger(__name__)
 
 
-class CallbackClient:
+class DjangoClient:
 
-    async def post(
+    def __init__(self):
+
+        self.client = httpx.AsyncClient(
+            base_url=settings.DJANGO_API_URL,
+            timeout=10,
+        )
+
+    async def _request(
         self,
-        url: str,
-        data: dict,
+        method,
+        url,
+        max_retries=3,
+        **kwargs,
     ):
-        print(f"url is : {url}")
-        print(f"data is : {data}")
 
-        try:
+        last_exception = None
 
-            async with httpx.AsyncClient(
-                timeout=30.0,
-            ) as client:
+        for attempt in range(1, max_retries + 1):
 
-                response = await client.post(
+            try:
+
+                request = self.client.build_request(
+                    method,
                     url,
-                    json=data,
+                    **kwargs,
                 )
 
-                print(f"response is : {response}")
-        except httpx.RequestError as exc:
+                body = request.content.decode("utf-8")
 
-            raise CallbackClientError(
-                f"Callback request failed: {exc}"
-            ) from exc
+                request.headers.update(
+                    create_service_headers(
+                        method=method,
+                        path=request.url.raw_path.decode(),
+                        body=body,
+                    )
+                )
 
-        if response.status_code >= 400:
+                response = await self.client.send(request)
 
-            raise CallbackClientError(
-                f"Callback request failed: "
-                f"{response.status_code} - "
-                f"{response.text}"
-            )
+                response.raise_for_status()
 
-        return response.json()
+                return response.json()
+
+            except httpx.RequestError as exc:
+
+                last_exception = exc
+
+                logger.warning(
+                    "Django request failed. "
+                    "method=%s url=%s attempt=%s/%s error=%s",
+                    method,
+                    url,
+                    attempt,
+                    max_retries,
+                    exc,
+                )
+
+            except httpx.HTTPStatusError as exc:
+
+                status_code = exc.response.status_code
+
+                if status_code not in {500, 502, 503, 504}:
+                    raise
+
+                last_exception = exc
+
+                logger.warning(
+                    "Django temporary error. "
+                    "method=%s url=%s status=%s attempt=%s/%s",
+                    method,
+                    url,
+                    status_code,
+                    attempt,
+                    max_retries,
+                )
+
+            if attempt < max_retries:
+                await asyncio.sleep(3)
+
+        raise last_exception
+
+    async def post(self, url, **kwargs):
+        return await self._request(
+            method="POST",
+            url=url,
+            **kwargs,
+        )

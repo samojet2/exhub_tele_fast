@@ -15,7 +15,9 @@ class Settings(BaseSettings):
 
     telegram_main_bot_token: str | None = None
     telegram_proxy_url: str | None = None
-    django_callback_url: str
+    DJANGO_API_URL: str
+    SERVICE_ID: str
+    SERVICE_SECRET: str
 
     # -----------------------------
     # Queue

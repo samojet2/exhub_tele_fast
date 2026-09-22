@@ -1,5 +1,5 @@
 import asyncio
-from services.callback import CallbackClient
+from services.callback import DjangoClient
 from core.config import settings
 
 batches = {}
@@ -34,7 +34,7 @@ async def wait_for_batch(batch_id: str):
     return batch["results"]
 
 
-callback_client = CallbackClient()
+django_client = DjangoClient()
 
 async def collect_batch_result(batch_id: str):
     results = await wait_for_batch(batch_id)
@@ -44,9 +44,9 @@ async def collect_batch_result(batch_id: str):
     print(f"BATCH {batch_id} COMPLETED")
     print("=" * 50)
 
-    await callback_client.post(
-        url=settings.django_callback_url,
-        data={
+    await django_client.post(
+        url="/social/api/telegram-result/",
+        json={
             "batch_id": batch_id,
             "results": results,
         },
