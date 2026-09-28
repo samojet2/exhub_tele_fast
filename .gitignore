@@ -31,5 +31,9 @@ archive.zip
 
 # macOS
 .DS_Store
-
 .codspeed.env
+
+# SQLite database
+*.db
+*.db-wal
+*.db-shm
