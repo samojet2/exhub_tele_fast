@@ -2,8 +2,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 
-DATABASE_URL = "sqlite:///./telegram_service.db"
-
+DATABASE_URL = "sqlite:////app/data/telegram_service.db"
 
 engine = create_engine(
     DATABASE_URL,
